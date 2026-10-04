@@ -40,6 +40,8 @@ MAX_LISTING_PAGES: 25
 NEW_BUILD:
   TAB: "New builds"
   EXTRA_COLUMNS: [Development / building, Floor, Building amenities, Year built]
+  MAX_RENT: 2400    # optional; new builds only. Main-area searches still use MAX_RENT above
+  SEARCH_URL: "https://www.rightmove.co.uk/property-to-rent/find.html?locationIdentifier=REGION%5E{rightmove}&minBedrooms={BEDROOMS}&maxBedrooms={BEDROOMS}&maxPrice={NEW_BUILD.MAX_RENT}&propertyTypes=flat&includeLetAgreed=false&sortType=6"
   MIN_YEAR: 2005
   MIN_FLOOR: 3
   AREAS:            # Rightmove REGION ids; searched only for new builds

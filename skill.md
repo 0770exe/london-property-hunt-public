@@ -48,8 +48,8 @@ Complete every step, then finish with the summary in step 6.
 ## 2. SEARCH
 Two searches feed the sheet:
 - MAIN: every area in CONFIG.AREAS, on every site in CONFIG.SEARCH_URLS.
-- NEW-BUILD (only if CONFIG.NEW_BUILD is set): every area in CONFIG.NEW_BUILD.AREAS, Rightmove only, same bedroom/rent
-  filters. Listings from these areas are kept ONLY if they pass the new-build check in step 3; everything else from
+- NEW-BUILD (only if CONFIG.NEW_BUILD is set): every area in CONFIG.NEW_BUILD.AREAS, Rightmove only, using
+  CONFIG.NEW_BUILD.SEARCH_URL (same bedrooms; rent cap CONFIG.NEW_BUILD.MAX_RENT, falling back to CONFIG.MAX_RENT). Listings from these areas are kept ONLY if they pass the new-build check in step 3; everything else from
   them is dropped silently (they're outside the main search on purpose).
 
 For each area in CONFIG.AREAS, open each search URL template in CONFIG.SEARCH_URLS (substituting the area's per-site
@@ -78,7 +78,8 @@ Keep only listings that:
   Zoopla pads results with "close matches" from other areas; if the postcode isn't shown on the card, check it on the
   listing page,
 - have exactly CONFIG.BEDROOMS bedrooms,
-- rent <= CONFIG.MAX_RENT pcm (convert pw to pcm: pw * 52 / 12),
+- rent <= CONFIG.MAX_RENT pcm, or <= CONFIG.NEW_BUILD.MAX_RENT for listings that end up NEW_BUILD in step 3
+  (convert pw to pcm: pw * 52 / 12),
 - are not marked Let Agreed / Under Offer,
 - are not a house share / room / HMO / retirement or student-only let,
 - are not already in the dedup sets.
@@ -114,7 +115,7 @@ Opening listing pages for the new-build search counts toward CONFIG.MAX_LISTING_
 whose summary is clearly a period conversion, house or maisonette.
 
 ## 4. PRIORITY
-- HIGH: area in CONFIG.PRIMARY_AREAS or CONFIG.NEW_BUILD.AREAS, rent <= MAX_RENT, furnished or part furnished (or "furnished or unfurnished"),
+- HIGH: area in CONFIG.PRIMARY_AREAS or CONFIG.NEW_BUILD.AREAS, rent within the applicable cap, furnished or part furnished (or "furnished or unfurnished"),
   available on or before CONFIG.LATEST_MOVE_IN (or "available now").
 - MEDIUM: area in CONFIG.SECONDARY_AREAS meeting the rest, OR a primary-area flat that is unfurnished, or whose available
   date is unknown, or which has an above-shop "confirm" flag.
