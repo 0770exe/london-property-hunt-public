@@ -51,9 +51,14 @@ Skip an area/site pair whose value is "none". If a results page heading doesn't 
 with no place, or a whole borough/county), don't use its results; list it under "Config to fix" in the summary.
 
 Extraction tips (use whichever works; fall back to page text):
-- Rightmove: listing data is in the page's embedded JSON (window.__NEXT_DATA__ or a <script type="application/json"> tag):
-  properties[] with id, bedrooms, price, displayAddress, propertySubType, firstVisibleDate / addedOrReduced.
-- Zoopla: JSON-LD (<script type="application/ld+json">) or the listing cards' text.
+- Rightmove results page: JSON.parse(document.getElementById('__NEXT_DATA__').textContent)
+  .props.pageProps.searchResults.properties[] -> id, bedrooms, price.amount, price.frequency, displayAddress,
+  addedOrReduced. The first card can be a repeated featured listing; dedupe by id. displayAddress often has no postcode.
+- Rightmove listing page: no __NEXT_DATA__ and get_page_text grabs the wrong block. Use
+  document.querySelector('main').innerText and read the "Letting details" block (Let available date, Deposit,
+  Furnish type, Council Tax), PROPERTY TYPE / BEDROOMS / BATHROOMS / SIZE, "Key features" and "Description".
+- Zoopla results page: listing ids from links matching /to-rent/details/<id>; the heading reads "Flats to rent in <area>".
+  Results below the "close matches" divider are other areas — the postcode allowlist handles them.
 - Other sites: page text via get_page_text.
 - JavaScript results come back truncated around ~900 characters. For bigger payloads, write the JSON into a hidden
   <pre id="hunt-buffer"> element and read it with get_page_text, or return it in slices.
