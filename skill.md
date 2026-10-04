@@ -33,7 +33,10 @@ Complete every step, then finish with the summary in step 6.
 - Read CONFIG (provided with this prompt, or config.md if present).
 - Read every row of CONFIG.SHEET, tab CONFIG.SHEET_TAB and (if set) tab CONFIG.NEW_BUILD.TAB, with the Google Sheets
   connector. Build two dedup sets covering both tabs:
-  a) LISTING KEYS from any column containing a URL: normalise to "<site>:<listing id>"
+  a) LISTING KEYS. Link cells usually show a title, not the URL (HYPERLINK formulas or pasted links), so get_values
+     alone misses them. Read the link column with get_spreadsheet, includeGridData true, ranges for each tab's link
+     column, fields ["sheets.data.rowData.values.hyperlink", "sheets.data.rowData.values.formattedValue"], and use
+     each cell's `hyperlink`. Also scan get_values text of every column for bare URLs. Normalise to "<site>:<listing id>"
      - rightmove.co.uk/properties/<id>        -> rightmove:<id>
      - zoopla.co.uk/to-rent/details/<id>      -> zoopla:<id>
      - openrent.co.uk/.../<id>                -> openrent:<id>  (last numeric path segment; from manually added rows)
@@ -126,7 +129,10 @@ Priority is a ranking aid only — never drop a listing that passed steps 2-3 be
 Append one row per new listing to the tab chosen in step 3 (CONFIG.SHEET_TAB, or CONFIG.NEW_BUILD.TAB for new builds),
 matching that tab's column order exactly (CONFIG.COLUMNS, then CONFIG.NEW_BUILD.EXTRA_COLUMNS on the new-build tab:
 development / building, floor, amenities, year built — blank if unknown). Use USER_ENTERED so numbers stay numbers. Rules:
-- Property link: the listing URL (not the title).
+- Property link: a formula =HYPERLINK("<listing URL>","<title>") so the cell shows a title and opens the listing.
+  Title: the listing page's own title (e.g. Rightmove "2 bedroom flat for rent in Uxbridge Road, West Ealing, London, W13");
+  if unavailable, "<beds> bedroom <flat|apartment|maisonette> for rent in <address>". Strip any double quotes from the
+  title and drop the "#/?channel=..." fragment from the URL.
 - Money columns: plain numbers (e.g. 1950), no £ sign. Unknown -> leave blank.
 - Furnishing: "Furnished" / "Part furnished" / "Unfurnished" / "Furnished or unfurnished".
 - Available from: "DD Mon YYYY" or "Available now".
