@@ -8,6 +8,7 @@ Twice a day, a scheduled Claude task uses Claude in Chrome to check Rightmove, Z
 
 - Whole flats only. The bedroom count, budget, areas and allowed postcodes all come from config.
 - Rightmove, Zoopla and OnTheMarket. SpareRoom is dropped (rooms only), and OpenRent because it shows a human-verification page to automated browsing. Note that OnTheMarket's robots.txt disallows automated search; it's included by choice and can be removed in config.
+- Optional **new-build / high-rise tab**. Flats that pass a modern-development and high-rise check go to their own tab, and you can list extra areas that are searched only for new builds.
 - Writes to a **Google Sheet** through the Sheets connector, appending rows in your existing column order, instead of a local `.xlsx`.
 - **No email sending.** Upstream had Chrome open Gmail and click Send. Here the run's summary arrives as the scheduled-task notification.
 - Dedups by listing ID **and** by street + postcode, so the same flat on two portals, or an older row without a URL, isn't added twice.

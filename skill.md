@@ -31,7 +31,8 @@ Complete every step, then finish with the summary in step 6.
 
 ## 1. LOAD CONFIG AND EXISTING ROWS
 - Read CONFIG (provided with this prompt, or config.md if present).
-- Read every row of CONFIG.SHEET (tab CONFIG.SHEET_TAB) with the Google Sheets connector. Build two dedup sets:
+- Read every row of CONFIG.SHEET, tab CONFIG.SHEET_TAB and (if set) tab CONFIG.NEW_BUILD.TAB, with the Google Sheets
+  connector. Build two dedup sets covering both tabs:
   a) LISTING KEYS from any column containing a URL: normalise to "<site>:<listing id>"
      - rightmove.co.uk/properties/<id>        -> rightmove:<id>
      - zoopla.co.uk/to-rent/details/<id>      -> zoopla:<id>
@@ -45,6 +46,12 @@ Complete every step, then finish with the summary in step 6.
   and noting the other portals in "Next action".
 
 ## 2. SEARCH
+Two searches feed the sheet:
+- MAIN: every area in CONFIG.AREAS, on every site in CONFIG.SEARCH_URLS.
+- NEW-BUILD (only if CONFIG.NEW_BUILD is set): every area in CONFIG.NEW_BUILD.AREAS, Rightmove only, same bedroom/rent
+  filters. Listings from these areas are kept ONLY if they pass the new-build check in step 3; everything else from
+  them is dropped silently (they're outside the main search on purpose).
+
 For each area in CONFIG.AREAS, open each search URL template in CONFIG.SEARCH_URLS (substituting the area's per-site
 location value), sorted newest first. Read only the first results page per area per site.
 Skip an area/site pair whose value is "none". If a results page heading doesn't name the area (e.g. "Flats to rent in"
@@ -67,8 +74,9 @@ Extraction tips (use whichever works; fall back to page text):
   <pre id="hunt-buffer"> element and read it with get_page_text, or return it in slices.
 
 Keep only listings that:
-- have an outward postcode in CONFIG.ALLOWED_POSTCODES (Zoopla pads results with "close matches" from other areas;
-  if the postcode isn't shown on the card, check it on the listing page),
+- have an outward postcode in CONFIG.ALLOWED_POSTCODES (main search) or CONFIG.NEW_BUILD.POSTCODES (new-build search).
+  Zoopla pads results with "close matches" from other areas; if the postcode isn't shown on the card, check it on the
+  listing page,
 - have exactly CONFIG.BEDROOMS bedrooms,
 - rent <= CONFIG.MAX_RENT pcm (convert pw to pcm: pw * 52 / 12),
 - are not marked Let Agreed / Under Offer,
@@ -89,8 +97,24 @@ ABOVE-SHOP CHECK (CONFIG.AVOID_ABOVE_SHOPS):
   nothing stated about what's below, keep it but write "Confirm nothing commercial below." in Next action.
 - Otherwise treat as fine.
 
+NEW-BUILD / HIGH-RISE CHECK (only if CONFIG.NEW_BUILD is set; applies to listings from BOTH searches):
+Mark the listing NEW_BUILD when both are true:
+  a) Modern development: described as new build / newly built / recently built / brand new / "new development", or a
+     year built of CONFIG.NEW_BUILD.MIN_YEAR or later, or an EPC rating of A or B together with a named development.
+     A building name alone ("... House", "... Point", "... Tower") is NOT enough: many are older council or 1960s-70s
+     blocks. "Recently refurbished", "established purpose-built" and period conversions do NOT count.
+  b) High-rise signal, any one of: on floor CONFIG.NEW_BUILD.MIN_FLOOR or above; lift access; building of 6+ storeys
+     or described as a tower/high-rise; concierge, residents' gym, roof terrace, podium garden or similar shared
+     amenities.
+If you can't tell from the listing, it is NOT a new build. Record the development name, floor, amenities and year built
+when shown.
+Routing: NEW_BUILD listings go to CONFIG.NEW_BUILD.TAB (from either search). Non-NEW_BUILD listings from the main
+search go to CONFIG.SHEET_TAB as usual. Non-NEW_BUILD listings from the new-build search are dropped.
+Opening listing pages for the new-build search counts toward CONFIG.MAX_LISTING_PAGES; to save pages, skip any card
+whose summary is clearly a period conversion, house or maisonette.
+
 ## 4. PRIORITY
-- HIGH: area in CONFIG.PRIMARY_AREAS, rent <= MAX_RENT, furnished or part furnished (or "furnished or unfurnished"),
+- HIGH: area in CONFIG.PRIMARY_AREAS or CONFIG.NEW_BUILD.AREAS, rent <= MAX_RENT, furnished or part furnished (or "furnished or unfurnished"),
   available on or before CONFIG.LATEST_MOVE_IN (or "available now").
 - MEDIUM: area in CONFIG.SECONDARY_AREAS meeting the rest, OR a primary-area flat that is unfurnished, or whose available
   date is unknown, or which has an above-shop "confirm" flag.
@@ -98,8 +122,9 @@ ABOVE-SHOP CHECK (CONFIG.AVOID_ABOVE_SHOPS):
 Priority is a ranking aid only — never drop a listing that passed steps 2-3 because it's LOW.
 
 ## 5. APPEND TO THE SHEET
-Append one row per new listing to CONFIG.SHEET / CONFIG.SHEET_TAB, matching the existing column order exactly
-(CONFIG.COLUMNS). Use USER_ENTERED so numbers stay numbers. Rules:
+Append one row per new listing to the tab chosen in step 3 (CONFIG.SHEET_TAB, or CONFIG.NEW_BUILD.TAB for new builds),
+matching that tab's column order exactly (CONFIG.COLUMNS, then CONFIG.NEW_BUILD.EXTRA_COLUMNS on the new-build tab:
+development / building, floor, amenities, year built — blank if unknown). Use USER_ENTERED so numbers stay numbers. Rules:
 - Property link: the listing URL (not the title).
 - Money columns: plain numbers (e.g. 1950), no £ sign. Unknown -> leave blank.
 - Furnishing: "Furnished" / "Part furnished" / "Unfurnished" / "Furnished or unfurnished".
@@ -115,6 +140,7 @@ After appending, read the appended range back and confirm the row count matches 
 ## 6. SUMMARY (final message of the run)
 Plain text, no bold. Keep it short enough to read on a phone:
 - Line 1: "<N> new 2-bed flats (<H> high, <M> medium, <L> low) — <date> <morning/evening> run"
+- Line 2 (if NEW_BUILD set): "<R> to Rentals, <B> to New builds"
 - HIGH listings: one line each — area, £rent, furnishing, available, link.
   If CONFIG.PROFILE is set, add under each a ready-to-send enquiry (under 80 words, casual, specific to the listing),
   for the person to copy and send themselves. If PROFILE is empty, skip enquiries.

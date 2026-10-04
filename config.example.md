@@ -36,6 +36,17 @@ SEARCH_URLS:
 SITES: [rightmove.co.uk, zoopla.co.uk, onthemarket.com]
 MAX_LISTING_PAGES: 25
 
+# Optional: route new-build / high-rise flats to their own tab, and search extra areas just for those.
+NEW_BUILD:
+  TAB: "New builds"
+  EXTRA_COLUMNS: [Development / building, Floor, Building amenities, Year built]
+  MIN_YEAR: 2005
+  MIN_FLOOR: 3
+  AREAS:            # Rightmove REGION ids; searched only for new builds
+    Stratford:    85312
+    Wembley Park: 79854
+  POSTCODES: [E15, E20, HA9]
+
 # Google Sheet to append to (must already exist, with a header row)
 SHEET: "<spreadsheet id>"
 SHEET_TAB: "Rentals"
