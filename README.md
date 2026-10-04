@@ -2,12 +2,12 @@
 
 A fork of [mikepapadim/london-property-hunt-public](https://github.com/mikepapadim/london-property-hunt-public), reworked for **whole-flat rentals** (default: 2-bed) instead of rooms and studios.
 
-Twice a day, a scheduled Claude task uses Claude in Chrome to check Rightmove and Zoopla for new listings. It throws out duplicates and flats above shops, ranks what's left, appends it to a Google Sheet you already use, and sends you a short phone-friendly summary with ready-to-send enquiries.
+Twice a day, a scheduled Claude task uses Claude in Chrome to check Rightmove, Zoopla and OnTheMarket for new listings. It throws out duplicates and flats above shops, ranks what's left, appends it to a Google Sheet you already use, and sends you a short phone-friendly summary with ready-to-send enquiries.
 
 ## How it differs from upstream
 
 - Whole flats only. The bedroom count, budget, areas and allowed postcodes all come from config.
-- Rightmove and Zoopla only. SpareRoom is dropped (rooms only). OnTheMarket is dropped because its robots.txt disallows automated search, and OpenRent because it shows a human-verification page to automated browsing.
+- Rightmove, Zoopla and OnTheMarket. SpareRoom is dropped (rooms only), and OpenRent because it shows a human-verification page to automated browsing. Note that OnTheMarket's robots.txt disallows automated search; it's included by choice and can be removed in config.
 - Writes to a **Google Sheet** through the Sheets connector, appending rows in your existing column order, instead of a local `.xlsx`.
 - **No email sending.** Upstream had Chrome open Gmail and click Send. Here the run's summary arrives as the scheduled-task notification.
 - Dedups by listing ID **and** by street + postcode, so the same flat on two portals, or an older row without a URL, isn't added twice.

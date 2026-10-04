@@ -22,16 +22,18 @@ ALLOWED_POSTCODES: [W5, W13, TW8, TW9, TW7, SW15]
 # Per-area location values for each site.
 # Rightmove: REGION id — get it from https://los.rightmove.co.uk/typeahead?query=<area>
 # Zoopla: URL slug, e.g. /to-rent/flats/<slug>/ — check the page heading names your area
+# OnTheMarket: URL slug, e.g. /to-rent/property/<slug>/
 # Use none to skip a site for an area.
 AREAS:
-  Ealing:    { rightmove: 87504, zoopla: ealing }
-  Brentford: { rightmove: 206,   zoopla: brentford }
+  Ealing:    { rightmove: 87504, zoopla: ealing,    otm: ealing }
+  Brentford: { rightmove: 206,   zoopla: brentford, otm: brentford }
 
 SEARCH_URLS:
   rightmove: "https://www.rightmove.co.uk/property-to-rent/find.html?locationIdentifier=REGION%5E{rightmove}&minBedrooms={BEDROOMS}&maxBedrooms={BEDROOMS}&maxPrice={MAX_RENT}&propertyTypes=flat&includeLetAgreed=false&sortType=6"
   zoopla:    "https://www.zoopla.co.uk/to-rent/flats/{zoopla}/?beds_min={BEDROOMS}&beds_max={BEDROOMS}&price_frequency=per_month&price_max={MAX_RENT}&results_sort=newest_listings"
+  otm:       "https://www.onthemarket.com/to-rent/property/{otm}/?min-bedrooms={BEDROOMS}&max-bedrooms={BEDROOMS}&max-price={MAX_RENT}&sort-field=update_date&let-agreed=false"   # unverified
 
-SITES: [rightmove.co.uk, zoopla.co.uk]
+SITES: [rightmove.co.uk, zoopla.co.uk, onthemarket.com]
 MAX_LISTING_PAGES: 25
 
 # Google Sheet to append to (must already exist, with a header row)
@@ -43,7 +45,8 @@ COLUMNS: [Property link, Area, Monthly rent, Furnishing, Available from, Bedroom
 
 ## Notes
 
-- Not searched, deliberately: OnTheMarket (its robots.txt disallows automated access to search pages) and OpenRent
-  (it serves a human-verification page to automated browsing). Use their own email alerts instead.
+- OpenRent is not searched: it serves a human-verification page to automated browsing. Use its own email alerts.
+- OnTheMarket's robots.txt disallows automated access to its search pages. Including it is your call; remove it from
+  SITES and SEARCH_URLS to respect that.
 - Rightmove `sortType=6` = newest listed.
 - To stop the hunt, pause or delete the scheduled task.

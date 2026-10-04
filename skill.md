@@ -59,6 +59,9 @@ Extraction tips (use whichever works; fall back to page text):
   Furnish type, Council Tax), PROPERTY TYPE / BEDROOMS / BATHROOMS / SIZE, "Key features" and "Description".
 - Zoopla results page: listing ids from links matching /to-rent/details/<id>; the heading reads "Flats to rent in <area>".
   Results below the "close matches" divider are other areas — the postcode allowlist handles them.
+- OnTheMarket results page (URL pattern not yet verified live): listing ids from links matching /details/<id>/.
+  Read cards with get_page_text or document.querySelector('main').innerText. If the URL pattern returns no results or
+  a page not matching the area, list it under "Config to fix" and stop using OnTheMarket for that run.
 - Other sites: page text via get_page_text.
 - JavaScript results come back truncated around ~900 characters. For bigger payloads, write the JSON into a hidden
   <pre id="hunt-buffer"> element and read it with get_page_text, or return it in slices.
@@ -129,7 +132,7 @@ If nothing new: say so in one line plus the counts.
 | Upstream | This fork |
 |---|---|
 | Rooms in shares + studios/1-beds | Whole flats, bedroom count from config (default 2) |
-| SpareRoom, OpenRent, Rightmove, Zoopla | Rightmove, Zoopla (OpenRent shows a human-verification page to automated browsing; OnTheMarket's robots.txt disallows it) |
+| SpareRoom, OpenRent, Rightmove, Zoopla | Rightmove, Zoopla, OnTheMarket (OpenRent shows a human-verification page to automated browsing) |
 | Local `.xlsx` via openpyxl | Appends to an existing Google Sheet tab via the Sheets connector |
 | Gmail draft, then Chrome clicks Send | No email. Summary is the run's final message (scheduled-task notification) |
 | Outreach `.txt` files | Enquiry text in the summary, sent by you |
